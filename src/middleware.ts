@@ -34,7 +34,8 @@ export async function updateSession(request: NextRequest) {
     if (
         !user &&
         !request.nextUrl.pathname.startsWith("/login") &&
-        !request.nextUrl.pathname.startsWith("/auth")
+        !request.nextUrl.pathname.startsWith("/auth") &&
+        !request.nextUrl.pathname.startsWith("/signup")
     ) {
         // Allow public assets and API (optional, adjust as needed)
         // For now, redirect everything else to login
@@ -44,7 +45,10 @@ export async function updateSession(request: NextRequest) {
     }
 
     // Redirect to dashboard if logged in and trying to access login
-    if (user && request.nextUrl.pathname.startsWith("/login")) {
+    if (
+        user &&
+        (request.nextUrl.pathname.startsWith("/login") || request.nextUrl.pathname.startsWith("/signup"))
+    ) {
         const url = request.nextUrl.clone();
         url.pathname = "/dashboard";
         return NextResponse.redirect(url);
