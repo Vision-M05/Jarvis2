@@ -16,6 +16,8 @@ export interface Client {
     email: string | null;
     phone: string | null;
     address: string | null;
+    city: string | null;
+    zip: string | null;
     created_at: string;
 }
 

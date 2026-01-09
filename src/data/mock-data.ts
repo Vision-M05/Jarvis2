@@ -7,6 +7,8 @@ export const mockClients: Client[] = [
         email: "thomas@email.com",
         phone: "06 12 34 56 78",
         address: "12 Rue des Lilas, 75001 Paris",
+        city: "Paris",
+        zip: "75001",
         created_at: "2024-01-15T10:00:00Z",
     },
     {
@@ -15,6 +17,8 @@ export const mockClients: Client[] = [
         email: "contact@durieux.fr",
         phone: "01 23 45 67 89",
         address: "45 Avenue de la République, 69001 Lyon",
+        city: "Lyon",
+        zip: "69001",
         created_at: "2024-01-10T09:00:00Z",
     },
     {
@@ -23,6 +27,8 @@ export const mockClients: Client[] = [
         email: "lefebvre@email.com",
         phone: "06 98 76 54 32",
         address: "8 Boulevard Haussmann, 75009 Paris",
+        city: "Paris",
+        zip: "75009",
         created_at: "2024-02-01T14:00:00Z",
     },
     {
@@ -31,6 +37,8 @@ export const mockClients: Client[] = [
         email: "syndic@erables.fr",
         phone: "01 45 67 89 10",
         address: "25 Rue des Érables, 92100 Boulogne",
+        city: "Boulogne",
+        zip: "92100",
         created_at: "2024-02-15T11:00:00Z",
     },
     {
@@ -39,6 +47,8 @@ export const mockClients: Client[] = [
         email: "contact@scileslilas.fr",
         phone: "01 56 78 90 12",
         address: "15 Rue des Lilas, 75020 Paris",
+        city: "Paris",
+        zip: "75020",
         created_at: "2024-03-01T08:00:00Z",
     },
 ];

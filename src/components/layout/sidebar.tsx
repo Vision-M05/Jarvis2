@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, FileText, CreditCard, Package, Settings } from "lucide-react";
+import { LayoutDashboard, FileText, CreditCard, Package, Settings, Users } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const navigation = [
     { name: "Tableau de Bord", href: "/", icon: LayoutDashboard },
+    { name: "Clients", href: "/clients", icon: Users },
     { name: "Devis", href: "/quotes", icon: FileText },
     { name: "À Facturer", href: "/billing", icon: CreditCard },
     { name: "Catalogue Prix", href: "/catalog", icon: Package },
@@ -34,8 +35,8 @@ export function Sidebar() {
                             key={item.name}
                             href={item.href}
                             className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${isActive
-                                    ? "bg-blue-50 text-blue-600"
-                                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                                ? "bg-blue-50 text-blue-600"
+                                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                                 }`}
                         >
                             <item.icon className="h-5 w-5" />
@@ -50,8 +51,8 @@ export function Sidebar() {
                 <Link
                     href="/settings"
                     className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${pathname === "/settings"
-                            ? "bg-blue-50 text-blue-600"
-                            : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                        ? "bg-blue-50 text-blue-600"
+                        : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                         }`}
                 >
                     <Settings className="h-5 w-5" />

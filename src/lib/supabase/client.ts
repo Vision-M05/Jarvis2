@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { createBrowserClient } from "@supabase/ssr";
 import type { Database } from "./types";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
@@ -9,7 +9,7 @@ export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
 
 // Create client only if configured
 export const supabase = isSupabaseConfigured
-    ? createClient<Database>(supabaseUrl, supabaseAnonKey)
+    ? createBrowserClient<Database>(supabaseUrl, supabaseAnonKey)
     : null;
 
 // Helper to check if we should use mock data

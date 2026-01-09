@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -23,8 +21,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { mockClients } from "@/data/mock-data";
 import { Loader2, CheckCircle } from "lucide-react";
+import { useClients } from "@/features/clients/hooks/use-clients";
+import { useCreateQuote } from "../hooks/use-quotes";
 
 const quoteSchema = z.object({
     clientId: z.string().min(1, "Veuillez sélectionner un client"),
@@ -42,8 +41,11 @@ interface CreateQuoteModalProps {
 }
 
 export function CreateQuoteModal({ open, onClose, onSuccess }: CreateQuoteModalProps) {
-    const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
+
+    // Hooks for real data
+    const { data: clients, isLoading: isLoadingClients } = useClients();
+    const { mutate: createQuote, isPending: isSubmitting } = useCreateQuote();
 
     const {
         register,
@@ -63,24 +65,18 @@ export function CreateQuoteModal({ open, onClose, onSuccess }: CreateQuoteModalP
         },
     });
 
-    const onSubmit = async (data: QuoteFormData) => {
-        setIsSubmitting(true);
-
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-
-        console.log("New quote:", data);
-
-        setIsSubmitting(false);
-        setIsSuccess(true);
-
-        // Show success then close
-        setTimeout(() => {
-            setIsSuccess(false);
-            reset();
-            onSuccess?.(data);
-            onClose();
-        }, 1500);
+    const onSubmit = (data: QuoteFormData) => {
+        createQuote(data, {
+            onSuccess: () => {
+                setIsSuccess(true);
+                setTimeout(() => {
+                    setIsSuccess(false);
+                    reset();
+                    onSuccess?.(data);
+                    onClose();
+                }, 1500);
+            }
+        });
     };
 
     const handleClose = () => {
@@ -105,7 +101,6 @@ export function CreateQuoteModal({ open, onClose, onSuccess }: CreateQuoteModalP
                     <div className="flex flex-col items-center justify-center py-8">
                         <CheckCircle className="h-16 w-16 text-green-500 mb-4" />
                         <p className="text-lg font-medium text-green-700">Devis créé avec succès !</p>
-                        <p className="text-sm text-slate-500">Référence: DEV-2024-{String(Math.floor(Math.random() * 900) + 100).padStart(3, "0")}</p>
                     </div>
                 ) : (
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -114,10 +109,10 @@ export function CreateQuoteModal({ open, onClose, onSuccess }: CreateQuoteModalP
                             <Label htmlFor="client">Client *</Label>
                             <Select onValueChange={(value) => setValue("clientId", value)}>
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Sélectionner un client" />
+                                    <SelectValue placeholder={isLoadingClients ? "Chargement..." : "Sélectionner un client"} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {mockClients.map((client) => (
+                                    {clients?.map((client) => (
                                         <SelectItem key={client.id} value={client.id}>
                                             {client.name}
                                         </SelectItem>
