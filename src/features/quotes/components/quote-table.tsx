@@ -12,7 +12,7 @@ import { QuoteDetailsModal } from "./quote-details-modal";
 import { useToast } from "@/components/shared/toast-provider";
 import { exportToCSV, quoteExportColumns } from "@/lib/export-utils";
 import { Pencil, FileText, Mail, Download } from "lucide-react";
-import type { Quote, Client, QuoteWithClient } from "@/lib/supabase/types";
+import type { QuoteWithClient } from "@/lib/supabase/types";
 
 interface QuoteTableProps {
     quotes: QuoteWithClient[];
