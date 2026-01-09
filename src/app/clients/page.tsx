@@ -6,6 +6,8 @@ import { ClientTable } from "@/features/clients/components/client-table";
 import { CreateClientModal } from "@/features/clients/components/create-client-modal";
 import { useClients } from "@/features/clients/hooks/use-clients";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 
 function ClientListSkeleton() {
     return (
@@ -26,6 +28,7 @@ function ClientListSkeleton() {
 export default function ClientsPage() {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
+    const [editingClient, setEditingClient] = useState<any>(null); // Type 'any' temporarily to avoid type mismatch with Client interface
 
     const { data: clients, isLoading, isError } = useClients();
 
@@ -36,18 +39,40 @@ export default function ClientsPage() {
             client.phone?.includes(searchQuery)
     ) || [];
 
+    const handleEdit = (client: any) => {
+        setEditingClient(client);
+        setIsCreateModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsCreateModalOpen(false);
+        setEditingClient(null);
+    };
+
     return (
         <AppShell
             actionLabel="Nouveau Client"
             onAction={() => setIsCreateModalOpen(true)}
-            searchPlaceholder="Rechercher par nom, email..."
-            onSearch={(query) => setSearchQuery(query)}
+            searchPlaceholder="Rechercher (Global)..."
         >
             <div className="mb-8">
                 <h1 className="text-2xl font-bold text-slate-900">Références Clients</h1>
                 <p className="text-slate-500">
                     Gérez votre carnet d'adresses et suivez l'historique de vos relations clients.
                 </p>
+            </div>
+
+            {/* Local Search and Filters */}
+            <div className="mb-6 flex items-center gap-4">
+                <div className="relative flex-1 max-w-sm">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Filtrer par nom, email..."
+                        className="pl-9 bg-white"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                </div>
             </div>
 
             {isLoading ? (
@@ -59,16 +84,13 @@ export default function ClientsPage() {
             ) : (
                 <ClientTable
                     clients={filteredClients}
-                    onEdit={(client) => {
-                        // To be implemented: setEditingClient(client); setIsCreateModalOpen(true);
-                        console.log("Edit client", client);
-                    }}
+                    onEdit={handleEdit}
                 />
             )}
 
             <CreateClientModal
                 open={isCreateModalOpen}
-                onClose={() => setIsCreateModalOpen(false)}
+                onClose={handleCloseModal}
             />
         </AppShell>
     );
