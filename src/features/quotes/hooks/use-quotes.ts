@@ -45,7 +45,7 @@ export function useQuotes(filters: QuoteFilters = {}) {
                 const paginated = filtered.slice(start, end);
 
                 return {
-                    data: paginated,
+                    data: paginated as unknown as QuoteWithClient[],
                     count: filtered.length,
                 };
             }
