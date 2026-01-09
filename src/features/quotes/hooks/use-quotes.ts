@@ -4,27 +4,48 @@ import type { Quote, QuoteStatus, QuoteWithClient } from "@/lib/supabase/types";
 import { mockQuotes } from "@/data/mock-data";
 import { useToast } from "@/components/shared/toast-provider";
 
-interface UseQuotesOptions {
+export interface QuoteFilters {
     status?: QuoteStatus | "ALL";
     page?: number;
     pageSize?: number;
 }
 
-export function useQuotes({ status = "ALL", page = 1, pageSize = 10 }: UseQuotesOptions = {}) {
+export interface QuoteStats {
+    totalActive: number;
+    activeCount: number;
+    signedCount: number;
+    conversionRate: number;
+}
+
+export interface CreateQuotePayload {
+    clientId: string;
+    projectName: string;
+    validUntil: string;
+}
+
+export function useQuotes(filters: QuoteFilters = {}) {
     const isMock = useMockData();
+    const { status, page = 1, pageSize = 10 } = filters;
 
     return useQuery({
-        queryKey: ["quotes", status, page, pageSize],
-        queryFn: async (): Promise<{ data: QuoteWithClient[]; count: number }> => {
+        queryKey: ["quotes", filters],
+        queryFn: async () => {
             if (isMock || !supabase) {
-                let filtered = mockQuotes;
-                if (status !== "ALL") {
-                    filtered = mockQuotes.filter((q) => q.status === status);
+                // Simulate API delay
+                await new Promise((resolve) => setTimeout(resolve, 800));
+
+                let filtered = [...mockQuotes];
+
+                if (status && status !== "ALL") {
+                    filtered = filtered.filter(q => q.status === status);
                 }
+
                 const start = (page - 1) * pageSize;
                 const end = start + pageSize;
+                const paginated = filtered.slice(start, end);
+
                 return {
-                    data: filtered.slice(start, end) as QuoteWithClient[],
+                    data: paginated,
                     count: filtered.length,
                 };
             }
@@ -32,11 +53,15 @@ export function useQuotes({ status = "ALL", page = 1, pageSize = 10 }: UseQuotes
             let query = supabase
                 .from("quotes")
                 .select(`
-          *,
-          client:clients(id, name, email)
-        `, { count: "exact" });
+                    *,
+                    client:clients (
+                        id,
+                        name,
+                        email
+                    )
+                `, { count: "exact" });
 
-            if (status !== "ALL") {
+            if (status && status !== "ALL") {
                 query = query.eq("status", status);
             }
 
@@ -44,45 +69,16 @@ export function useQuotes({ status = "ALL", page = 1, pageSize = 10 }: UseQuotes
             const to = from + pageSize - 1;
 
             const { data, error, count } = await query
-                .order("created_at", { ascending: false })
-                .range(from, to);
+                .range(from, to)
+                .order("created_at", { ascending: false });
 
-            if (error) {
-                console.error("Supabase error:", error);
-                throw new Error(error.message);
-            }
+            if (error) throw new Error(error.message);
 
             return {
-                data: (data as QuoteWithClient[]) || [],
+                data: (data || []) as QuoteWithClient[],
                 count: count || 0,
             };
         },
-    });
-}
-
-export function useQuote(id: string) {
-    const isMock = useMockData();
-
-    return useQuery({
-        queryKey: ["quote", id],
-        queryFn: async (): Promise<QuoteWithClient | null> => {
-            if (isMock || !supabase) {
-                return mockQuotes.find((q) => q.id === id) as QuoteWithClient || null;
-            }
-
-            const { data, error } = await supabase
-                .from("quotes")
-                .select(`
-          *,
-          client:clients(id, name, email)
-        `)
-                .eq("id", id)
-                .single();
-
-            if (error) throw new Error(error.message);
-            return data as QuoteWithClient;
-        },
-        enabled: !!id,
     });
 }
 
@@ -91,63 +87,43 @@ export function useQuoteStats() {
 
     return useQuery({
         queryKey: ["quote-stats"],
-        queryFn: async () => {
+        queryFn: async (): Promise<QuoteStats> => {
             if (isMock || !supabase) {
-                const totalActive = mockQuotes
-                    .filter((q) => q.status === "SENT" || q.status === "PENDING")
-                    .reduce((sum, q) => sum + (q.total_ht || 0), 0);
-
-                const activeCount = mockQuotes.filter(
-                    (q) => q.status === "SENT" || q.status === "PENDING"
-                ).length;
-
-                const signedCount = mockQuotes.filter((q) => q.status === "SIGNED").length;
-                const totalCount = mockQuotes.length;
-                const conversionRate = totalCount > 0 ? Math.round((signedCount / totalCount) * 100) : 0;
+                const active = mockQuotes.filter(q => q.status === "SENT" || q.status === "PENDING");
+                const signed = mockQuotes.filter(q => q.status === "SIGNED");
+                const totalActive = active.reduce((sum, q) => sum + q.total_ht, 0);
 
                 return {
                     totalActive,
-                    activeCount,
-                    signedCount,
-                    conversionRate,
+                    activeCount: active.length,
+                    signedCount: signed.length,
+                    conversionRate: mockQuotes.length > 0
+                        ? (signed.length / mockQuotes.length) * 100
+                        : 0
                 };
             }
 
-            const { data, error } = await supabase
+            const { data: quotes, error } = await supabase
                 .from("quotes")
                 .select("status, total_ht");
 
-            const quotes = (data as unknown as Pick<Quote, "status" | "total_ht">[]) || [];
-
             if (error) throw new Error(error.message);
 
-            const totalActive = quotes
-                ?.filter((q) => q.status === "SENT" || q.status === "PENDING")
-                .reduce((sum, q) => sum + (q.total_ht || 0), 0) || 0;
+            const typedQuotes = (quotes || []) as { status: QuoteStatus, total_ht: number }[];
 
-            const activeCount = quotes?.filter(
-                (q) => q.status === "SENT" || q.status === "PENDING"
-            ).length || 0;
-
-            const signedCount = quotes?.filter((q) => q.status === "SIGNED").length || 0;
-            const totalCount = quotes?.length || 0;
-            const conversionRate = totalCount > 0 ? Math.round((signedCount / totalCount) * 100) : 0;
+            const active = typedQuotes.filter(q => q.status === "SENT" || q.status === "PENDING");
+            const signed = typedQuotes.filter(q => q.status === "SIGNED");
 
             return {
-                totalActive,
-                activeCount,
-                signedCount,
-                conversionRate,
+                totalActive: active.reduce((sum, q) => sum + q.total_ht, 0),
+                activeCount: active.length,
+                signedCount: signed.length,
+                conversionRate: typedQuotes.length > 0
+                    ? (signed.length / typedQuotes.length) * 100
+                    : 0
             };
-        },
+        }
     });
-}
-
-export interface CreateQuotePayload {
-    clientId: string;
-    projectName: string;
-    description?: string;
-    validUntil: string;
 }
 
 export function useCreateQuote() {
@@ -181,6 +157,10 @@ export function useCreateQuote() {
             // 1. Generate Reference
             const reference = `DEV-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
 
+            // Get current user
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error("Vous devez être connecté pour créer un devis.");
+
             // 2. Insert Quote
             const { data, error } = await supabase
                 .from("quotes")
@@ -191,6 +171,7 @@ export function useCreateQuote() {
                     status: "DRAFT" as QuoteStatus,
                     reference: reference,
                     total_ht: 0,
+                    user_id: user.id
                 }] as any)
                 .select()
                 .single();
@@ -200,18 +181,18 @@ export function useCreateQuote() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["quotes"] });
-            queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
+            queryClient.invalidateQueries({ queryKey: ["quote-stats"] });
             addToast({
                 type: "success",
                 title: "Devis créé",
-                message: "Le devis a été créé avec succès.",
+                message: "Le brouillon de devis a été généré avec succès.",
             });
         },
         onError: (error) => {
             addToast({
                 type: "error",
                 title: "Erreur",
-                message: error.message || "Impossible de créer le devis.",
+                message: error.message || "Une erreur est survenue lors de la création du devis.",
             });
         }
     });

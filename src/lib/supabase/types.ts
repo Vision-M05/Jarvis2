@@ -18,6 +18,7 @@ export interface Client {
     address: string | null;
     city: string | null;
     zip: string | null;
+    user_id?: string;
     created_at: string;
 }
 
@@ -39,6 +40,7 @@ export interface Quote {
     status: QuoteStatus;
     total_ht: number;
     valid_until: string | null;
+    user_id?: string;
     created_at: string;
     updated_at: string;
     // Joined data
