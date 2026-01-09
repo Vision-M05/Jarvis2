@@ -52,7 +52,7 @@ export default function LoginPage() {
                 message: "Vous allez être redirigé...",
             });
 
-            router.push("/dashboard");
+            router.push("/");
             router.refresh(); // Refresh to update middleware/server sessions
         } catch (error: any) {
             addToast({
