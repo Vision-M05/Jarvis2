@@ -8,7 +8,7 @@ import { GenerateInvoiceModal } from "./generate-invoice-modal";
 import { Filter } from "lucide-react";
 import type { Invoice, Quote, Client } from "@/lib/supabase/types";
 
-interface BillingTableProps {
+export interface BillingTableProps {
     invoices: (Invoice & {
         quote?: (Quote & {
             client?: { id: string; name: string } | null;
@@ -29,11 +29,8 @@ export function BillingTable({
 }: BillingTableProps) {
     const pageSize = 4;
     const totalPages = Math.ceil(totalCount / pageSize);
-    const [selectedInvoice, setSelectedInvoice] = useState<(Invoice & {
-        quote?: (Quote & {
-            client?: { id: string; name: string } | null;
-        }) | null;
-    }) | null>(null);
+    // Explicitly reusing the type from props for the state
+    const [selectedInvoice, setSelectedInvoice] = useState<BillingTableProps["invoices"][0] | null>(null);
 
     const getProgressColor = (percentage: number, isLate: boolean) => {
         if (isLate) return "bg-red-500";
