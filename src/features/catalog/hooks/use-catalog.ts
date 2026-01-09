@@ -76,7 +76,7 @@ export function useCatalogCategories() {
         queryFn: async () => {
             // Use mock data if Supabase not configured
             if (isMock || !supabase) {
-                const categories = [...new Set(mockItems.map(item => item.category))];
+                const categories = Array.from(new Set(mockItems.map(item => item.category)));
                 return categories;
             }
 
@@ -85,10 +85,12 @@ export function useCatalogCategories() {
                 .select("category")
                 .order("category");
 
+            const items = (data as unknown as Pick<Item, "category">[]) || [];
+
             if (error) throw new Error(error.message);
 
             // Get unique categories
-            const categories = [...new Set(data?.map((item) => item.category) || [])];
+            const categories = Array.from(new Set(items.map((item) => item.category)));
             return categories;
         },
     });

@@ -12,12 +12,12 @@ import { Button } from "@/components/ui/button";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { StatusBadge, getQuoteStatusVariant, getQuoteStatusLabel } from "@/components/shared/status-badge";
 import { FileText, Mail, Download, Printer, X } from "lucide-react";
-import type { Quote, Client } from "@/lib/supabase/types";
+import type { Quote, Client, QuoteWithClient } from "@/lib/supabase/types";
 
 interface QuoteDetailsModalProps {
     open: boolean;
     onClose: () => void;
-    quote: (Quote & { client?: Client }) | null;
+    quote: QuoteWithClient | null;
 }
 
 export function QuoteDetailsModal({ open, onClose, quote }: QuoteDetailsModalProps) {

@@ -1,16 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase, useMockData } from "@/lib/supabase/client";
-import type { Invoice, Quote } from "@/lib/supabase/types";
+import type { Invoice, Quote, InvoiceWithQuote } from "@/lib/supabase/types";
 import { mockInvoices, mockBillingKPIs } from "@/data/mock-data";
-
-export interface InvoiceWithQuote extends Invoice {
-    quote: (Quote & {
-        client: {
-            id: string;
-            name: string;
-        } | null;
-    }) | null;
-}
 
 interface UseInvoicesOptions {
     page?: number;
@@ -74,9 +65,11 @@ export function useBillingStats() {
                 };
             }
 
-            const { data: invoices, error } = await supabase
+            const { data, error } = await supabase
                 .from("invoices")
                 .select("status, total_ht, billed_percentage");
+
+            const invoices = (data as unknown as Pick<Invoice, "status" | "total_ht">[]) || [];
 
             if (error) throw new Error(error.message);
 

@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase, useMockData } from "@/lib/supabase/client";
 import { mockDashboardKPIs, mockRevenueData, mockActivities } from "@/data/mock-data";
+import type { Quote, Invoice } from "@/lib/supabase/types";
 
 export function useDashboardStats() {
     const isMock = useMockData();
@@ -19,16 +20,20 @@ export function useDashboardStats() {
             }
 
             // Get quotes stats
-            const { data: quotes, error: quotesError } = await supabase
+            const { data: quotesData, error: quotesError } = await supabase
                 .from("quotes")
                 .select("status, total_ht, created_at");
+
+            const quotes = (quotesData as unknown as Pick<Quote, "status" | "total_ht" | "created_at">[]) || [];
 
             if (quotesError) throw new Error(quotesError.message);
 
             // Get invoices stats
-            const { data: invoices, error: invoicesError } = await supabase
+            const { data: invoicesData, error: invoicesError } = await supabase
                 .from("invoices")
                 .select("status, total_ht");
+
+            const invoices = (invoicesData as unknown as Pick<Invoice, "status" | "total_ht">[]) || [];
 
             if (invoicesError) throw new Error(invoicesError.message);
 
@@ -91,12 +96,14 @@ export function useRevenueChart() {
             const sixMonthsAgo = new Date();
             sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
-            const { data: quotes, error } = await supabase
+            const { data: quotesData, error } = await supabase
                 .from("quotes")
                 .select("total_ht, created_at")
                 .eq("status", "SIGNED")
                 .gte("created_at", sixMonthsAgo.toISOString())
                 .order("created_at", { ascending: true });
+
+            const quotes = (quotesData as unknown as Pick<Quote, "total_ht" | "created_at">[]) || [];
 
             if (error) throw new Error(error.message);
 
@@ -140,7 +147,7 @@ export function useRecentActivity() {
             }
 
             // Get recent quotes
-            const { data: recentQuotes, error: quotesError } = await supabase
+            const { data: recentQuotesData, error: quotesError } = await supabase
                 .from("quotes")
                 .select(`
           id,
@@ -152,10 +159,12 @@ export function useRecentActivity() {
                 .order("created_at", { ascending: false })
                 .limit(5);
 
+            const recentQuotes = (recentQuotesData as unknown as (Pick<Quote, "id" | "reference" | "status" | "created_at"> & { client: { name: string } | null })[]) || [];
+
             if (quotesError) throw new Error(quotesError.message);
 
             // Get recent invoices (paid)
-            const { data: recentPayments, error: invoicesError } = await supabase
+            const { data: recentPaymentsData, error: invoicesError } = await supabase
                 .from("invoices")
                 .select(`
           id,
@@ -169,6 +178,8 @@ export function useRecentActivity() {
                 .eq("status", "PAID")
                 .order("created_at", { ascending: false })
                 .limit(3);
+
+            const recentPayments = (recentPaymentsData as unknown as (Pick<Invoice, "id" | "reference" | "total_ht" | "created_at"> & { quote: { client: { name: string } | null } | null })[]) || [];
 
             if (invoicesError) throw new Error(invoicesError.message);
 

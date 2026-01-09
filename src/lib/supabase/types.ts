@@ -66,6 +66,18 @@ export interface Invoice {
     quote?: Quote;
 }
 
+export interface QuoteWithClient extends Omit<Quote, "client"> {
+    client: {
+        id: string;
+        name: string;
+        email: string | null;
+    } | null;
+}
+
+export interface InvoiceWithQuote extends Omit<Invoice, "quote"> {
+    quote: QuoteWithClient | null;
+}
+
 // Database type for Supabase client
 export interface Database {
     public: {

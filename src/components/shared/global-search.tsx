@@ -53,14 +53,14 @@ export function GlobalSearch({ placeholder = "Rechercher..." }: GlobalSearchProp
         mockQuotes.forEach((quote) => {
             if (
                 quote.reference.toLowerCase().includes(searchQuery) ||
-                quote.project_name.toLowerCase().includes(searchQuery) ||
-                quote.client?.name.toLowerCase().includes(searchQuery)
+                (quote.project_name && quote.project_name.toLowerCase().includes(searchQuery)) ||
+                (quote.client?.name && quote.client.name.toLowerCase().includes(searchQuery))
             ) {
                 searchResults.push({
                     id: quote.id,
                     type: "quote",
                     title: quote.reference,
-                    subtitle: `${quote.client?.name} - ${quote.project_name}`,
+                    subtitle: `${quote.client?.name || "Sans client"} - ${quote.project_name || "Sans projet"}`,
                     href: `/quotes?id=${quote.id}`,
                 });
             }
@@ -70,7 +70,7 @@ export function GlobalSearch({ placeholder = "Rechercher..." }: GlobalSearchProp
         mockClients.forEach((client) => {
             if (
                 client.name.toLowerCase().includes(searchQuery) ||
-                client.email?.toLowerCase().includes(searchQuery)
+                (client.email && client.email.toLowerCase().includes(searchQuery))
             ) {
                 searchResults.push({
                     id: client.id,

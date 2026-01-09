@@ -1,15 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase, useMockData } from "@/lib/supabase/client";
-import type { Quote, QuoteStatus } from "@/lib/supabase/types";
+import type { Quote, QuoteStatus, QuoteWithClient } from "@/lib/supabase/types";
 import { mockQuotes } from "@/data/mock-data";
-
-export interface QuoteWithClient extends Quote {
-    client: {
-        id: string;
-        name: string;
-        email: string | null;
-    } | null;
-}
 
 interface UseQuotesOptions {
     status?: QuoteStatus | "ALL";
@@ -80,9 +72,11 @@ export function useQuoteStats() {
                 };
             }
 
-            const { data: quotes, error } = await supabase
+            const { data, error } = await supabase
                 .from("quotes")
                 .select("status, total_ht");
+
+            const quotes = (data as unknown as Pick<Quote, "status" | "total_ht">[]) || [];
 
             if (error) throw new Error(error.message);
 

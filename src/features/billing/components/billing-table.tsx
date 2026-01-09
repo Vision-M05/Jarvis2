@@ -6,14 +6,10 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { GenerateInvoiceModal } from "./generate-invoice-modal";
 import { Filter } from "lucide-react";
-import type { Invoice, Quote, Client } from "@/lib/supabase/types";
+import type { Invoice, Quote, Client, InvoiceWithQuote } from "@/lib/supabase/types";
 
 export interface BillingTableProps {
-    invoices: (Invoice & {
-        quote?: (Quote & {
-            client?: { id: string; name: string } | null;
-        }) | null;
-    })[];
+    invoices: InvoiceWithQuote[];
     totalCount: number;
     currentPage: number;
     onPageChange: (page: number) => void;
@@ -29,8 +25,7 @@ export function BillingTable({
 }: BillingTableProps) {
     const pageSize = 4;
     const totalPages = Math.ceil(totalCount / pageSize);
-    // Explicitly reusing the type from props for the state
-    const [selectedInvoice, setSelectedInvoice] = useState<BillingTableProps["invoices"][0] | null>(null);
+    const [selectedInvoice, setSelectedInvoice] = useState<InvoiceWithQuote | null>(null);
 
     const getProgressColor = (percentage: number, isLate: boolean) => {
         if (isLate) return "bg-red-500";
@@ -39,11 +34,7 @@ export function BillingTable({
         return "bg-blue-600";
     };
 
-    const handleGenerateClick = (invoice: Invoice & {
-        quote?: (Quote & {
-            client?: { id: string; name: string } | null;
-        }) | null;
-    }) => {
+    const handleGenerateClick = (invoice: InvoiceWithQuote) => {
         setSelectedInvoice(invoice);
     };
 

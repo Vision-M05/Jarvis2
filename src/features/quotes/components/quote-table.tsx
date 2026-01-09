@@ -12,10 +12,10 @@ import { QuoteDetailsModal } from "./quote-details-modal";
 import { useToast } from "@/components/shared/toast-provider";
 import { exportToCSV, quoteExportColumns } from "@/lib/export-utils";
 import { Pencil, FileText, Mail, Download } from "lucide-react";
-import type { Quote, Client } from "@/lib/supabase/types";
+import type { Quote, Client, QuoteWithClient } from "@/lib/supabase/types";
 
 interface QuoteTableProps {
-    quotes: (Quote & { client?: Client })[];
+    quotes: QuoteWithClient[];
     totalCount: number;
     currentPage: number;
     onPageChange: (page: number) => void;
@@ -24,10 +24,10 @@ interface QuoteTableProps {
 export function QuoteTable({ quotes, totalCount, currentPage, onPageChange }: QuoteTableProps) {
     const pageSize = 10;
     const totalPages = Math.ceil(totalCount / pageSize);
-    const [selectedQuote, setSelectedQuote] = useState<(Quote & { client?: Client }) | null>(null);
+    const [selectedQuote, setSelectedQuote] = useState<QuoteWithClient | null>(null);
     const { addToast } = useToast();
 
-    const handleQuoteClick = (quote: Quote & { client?: Client }) => {
+    const handleQuoteClick = (quote: QuoteWithClient) => {
         setSelectedQuote(quote);
     };
 
@@ -50,7 +50,7 @@ export function QuoteTable({ quotes, totalCount, currentPage, onPageChange }: Qu
         });
     };
 
-    const handleDownloadPDF = (e: React.MouseEvent, quote: Quote & { client?: Client }) => {
+    const handleDownloadPDF = (e: React.MouseEvent, quote: QuoteWithClient) => {
         e.stopPropagation();
         addToast({
             type: "success",
@@ -59,7 +59,7 @@ export function QuoteTable({ quotes, totalCount, currentPage, onPageChange }: Qu
         });
     };
 
-    const handleSendEmail = (e: React.MouseEvent, quote: Quote & { client?: Client }) => {
+    const handleSendEmail = (e: React.MouseEvent, quote: QuoteWithClient) => {
         e.stopPropagation();
         addToast({
             type: "success",
@@ -176,8 +176,8 @@ export function QuoteTable({ quotes, totalCount, currentPage, onPageChange }: Qu
                                 key={page}
                                 onClick={() => onPageChange(page)}
                                 className={`h-8 w-8 rounded-lg text-sm font-medium ${currentPage === page
-                                        ? "bg-blue-600 text-white"
-                                        : "text-slate-600 hover:bg-slate-100"
+                                    ? "bg-blue-600 text-white"
+                                    : "text-slate-600 hover:bg-slate-100"
                                     }`}
                             >
                                 {page}
