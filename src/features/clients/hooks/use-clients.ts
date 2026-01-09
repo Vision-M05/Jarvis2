@@ -83,7 +83,8 @@ export function useUpdateClient() {
 
             const { data, error } = await supabase
                 .from("clients")
-                .update(updates as any)
+                // @ts-ignore
+                .update(updates)
                 .eq("id", id)
                 .select()
                 .single();
