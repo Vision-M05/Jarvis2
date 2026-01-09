@@ -9,7 +9,11 @@ import { Filter } from "lucide-react";
 import type { Invoice, Quote, Client } from "@/lib/supabase/types";
 
 interface BillingTableProps {
-    invoices: (Invoice & { quote?: Quote & { client?: Client } })[];
+    invoices: (Invoice & {
+        quote?: (Quote & {
+            client?: { id: string; name: string } | null;
+        }) | null;
+    })[];
     totalCount: number;
     currentPage: number;
     onPageChange: (page: number) => void;
@@ -25,7 +29,11 @@ export function BillingTable({
 }: BillingTableProps) {
     const pageSize = 4;
     const totalPages = Math.ceil(totalCount / pageSize);
-    const [selectedInvoice, setSelectedInvoice] = useState<(Invoice & { quote?: Quote & { client?: Client } }) | null>(null);
+    const [selectedInvoice, setSelectedInvoice] = useState<(Invoice & {
+        quote?: (Quote & {
+            client?: { id: string; name: string } | null;
+        }) | null;
+    }) | null>(null);
 
     const getProgressColor = (percentage: number, isLate: boolean) => {
         if (isLate) return "bg-red-500";
@@ -34,7 +42,11 @@ export function BillingTable({
         return "bg-blue-600";
     };
 
-    const handleGenerateClick = (invoice: Invoice & { quote?: Quote & { client?: Client } }) => {
+    const handleGenerateClick = (invoice: Invoice & {
+        quote?: (Quote & {
+            client?: { id: string; name: string } | null;
+        }) | null;
+    }) => {
         setSelectedInvoice(invoice);
     };
 
@@ -144,8 +156,8 @@ export function BillingTable({
                                 key={page}
                                 onClick={() => onPageChange(page)}
                                 className={`h-8 w-8 rounded-lg text-sm font-medium ${currentPage === page
-                                        ? "bg-blue-600 text-white"
-                                        : "text-slate-600 hover:bg-slate-100"
+                                    ? "bg-blue-600 text-white"
+                                    : "text-slate-600 hover:bg-slate-100"
                                     }`}
                             >
                                 {page}
