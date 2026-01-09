@@ -143,11 +143,10 @@ export function useQuoteStats() {
     });
 }
 
-// Interface matching the Form Data from CreateQuoteModal
 export interface CreateQuotePayload {
     clientId: string;
     projectName: string;
-    description?: string; // Optional in form
+    description?: string;
     validUntil: string;
 }
 
@@ -183,7 +182,6 @@ export function useCreateQuote() {
             const reference = `DEV-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
 
             // 2. Insert Quote
-            // description is ignored if not in DB schema
             const { data, error } = await supabase
                 .from("quotes")
                 .insert([{
@@ -193,7 +191,7 @@ export function useCreateQuote() {
                     status: "DRAFT" as QuoteStatus,
                     reference: reference,
                     total_ht: 0,
-                }])
+                }] as any)
                 .select()
                 .single();
 
