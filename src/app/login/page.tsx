@@ -115,6 +115,14 @@ export default function LoginPage() {
                         </Button>
                     </CardFooter>
                 </form>
+                <CardFooter className="flex flex-col space-y-4 border-t px-6 py-4">
+                    <div className="text-center text-sm text-slate-600">
+                        Pas encore de compte ?{" "}
+                        <a href="/signup" className="font-medium text-blue-600 hover:text-blue-500 hover:underline">
+                            Créer un compte
+                        </a>
+                    </div>
+                </CardFooter>
             </Card>
         </div>
     );
